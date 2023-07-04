@@ -15,32 +15,20 @@ final class ColorLabel: UIView {
         view.layer.borderColor = UIColor.white.cgColor
         view.backgroundColor = .black
 
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.widthAnchor.constraint(equalToConstant: 24).isActive = true
-        view.heightAnchor.constraint(equalToConstant: 24).isActive = true
-
         return view
     }()
 
     private(set) lazy var textLabel: UILabel = {
         let label = UILabel()
+        label.numberOfLines = 0
         label.textColor = .white
         label.text = "Unknown"
 
         return label
     }()
 
-    private lazy var stackView: UIStackView = {
-        let stackView = UIStackView(arrangedSubviews: [
-            colorView, textLabel
-        ])
-
-        stackView.axis = .horizontal
-        stackView.spacing = 8
-        stackView.isLayoutMarginsRelativeArrangement = true
-        stackView.layoutMargins = .init(top: 12, left: 12, bottom: 12, right: 12)
-
-        return stackView
+    private lazy var widthConstraint: NSLayoutConstraint = {
+        widthAnchor.constraint(equalToConstant: 180)
     }()
 
     var text: String? {
@@ -76,15 +64,28 @@ final class ColorLabel: UIView {
         layer.cornerRadius = 8
         layer.masksToBounds = true
 
-        addSubview(stackView)
+        addSubview(colorView)
+        addSubview(textLabel)
 
-        stackView.translatesAutoresizingMaskIntoConstraints = false
+        layoutMargins = .init(top: 12, left: 12, bottom: 12, right: 12)
+
+        translatesAutoresizingMaskIntoConstraints = false
+        colorView.translatesAutoresizingMaskIntoConstraints = false
+        textLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            stackView.centerXAnchor.constraint(equalTo: self.centerXAnchor),
-            stackView.centerYAnchor.constraint(equalTo: self.centerYAnchor),
-            stackView.topAnchor.constraint(equalTo: self.topAnchor),
-            stackView.leadingAnchor.constraint(equalTo: self.leadingAnchor)
+            colorView.widthAnchor.constraint(equalToConstant: 24),
+            colorView.heightAnchor.constraint(equalToConstant: 24),
+            colorView.topAnchor.constraint(greaterThanOrEqualTo: layoutMarginsGuide.topAnchor),
+            colorView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
+            colorView.centerYAnchor.constraint(equalTo: layoutMarginsGuide.centerYAnchor),
+
+            textLabel.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
+            textLabel.leadingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: 12),
+            textLabel.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            textLabel.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+
+            widthConstraint
         ])
     }
 }
