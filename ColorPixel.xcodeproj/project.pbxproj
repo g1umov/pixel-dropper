@@ -351,8 +351,8 @@
 				DEVELOPMENT_TEAM = BA672Z9B27;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ColorPixel/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Color Pixel";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
+				INFOPLIST_KEY_CFBundleDisplayName = "Pixel Dropper";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to capture photos and videos";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -364,7 +364,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ColorPixel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.g1umov.PixelDropper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -382,8 +382,8 @@
 				DEVELOPMENT_TEAM = BA672Z9B27;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = ColorPixel/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Color Pixel";
-				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.graphics-design";
+				INFOPLIST_KEY_CFBundleDisplayName = "Pixel Dropper";
+				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSCameraUsageDescription = "This app uses the camera to capture photos and videos";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -395,7 +395,7 @@
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = com.example.ColorPixel;
+				PRODUCT_BUNDLE_IDENTIFIER = com.g1umov.PixelDropper;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
