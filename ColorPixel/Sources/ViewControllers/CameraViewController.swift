@@ -70,6 +70,8 @@ final class CameraViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        cameraPreview.session = captureSession
+
         Task {
             await setupCaptureSession()
         }
@@ -151,10 +153,6 @@ final class CameraViewController: UIViewController {
 
         captureSession.addOutput(videoOutput)
         captureSession.commitConfiguration()
-
-        cameraPreview.session = captureSession
-        cameraPreview.videoPreviewLayer.connection?.videoOrientation = .portrait
-        cameraPreview.videoPreviewLayer.videoGravity = .resizeAspectFill
     }
 }
 
