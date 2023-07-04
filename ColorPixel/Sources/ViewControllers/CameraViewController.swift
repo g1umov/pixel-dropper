@@ -161,7 +161,7 @@ final class CameraViewController: UIViewController {
 extension CameraViewController {
 
     @objc func handlePanForTopColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let view = gestureRecognizer.view as? ColorLabel else { return }
+        guard let _ = gestureRecognizer.view as? ColorLabel else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
         topColorLabelCenterX.constant += translation.x
@@ -170,7 +170,7 @@ extension CameraViewController {
     }
 
     @objc func handlePanForBottomColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let view = gestureRecognizer.view as? ColorLabel else { return }
+        guard let _ = gestureRecognizer.view as? ColorLabel else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
         bottomColorLabelCenterX.constant += translation.x
@@ -193,23 +193,47 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
         let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)
 
-        let pixelX = width / 2
-        let pixelY = height / 2
+        DispatchQueue.main.async {
+            let xk = self.topColorLabel.center.x / self.cameraPreview.bounds.width
+            let yk = self.topColorLabel.center.y / self.cameraPreview.bounds.height
+            let pixelX = Int(CGFloat(width) * xk)
+            let pixelY = Int(CGFloat(height) * yk)
 
-        let bytesPerPixel = 4 // RGB(a)
-        let byteIndex = (pixelX * bytesPerPixel) + (pixelY * bytesPerRow)
+            let bytesPerPixel = 4
+            let byteIndex = (pixelX * bytesPerPixel) + (pixelY * bytesPerRow)
 
-        if let baseAddress = baseAddress?.assumingMemoryBound(to: UInt8.self) {
-            let pixelAddress = baseAddress + byteIndex
-            let red = CGFloat(pixelAddress[2]) / 255
-            let green = CGFloat(pixelAddress[1]) / 255
-            let blue = CGFloat(pixelAddress[0]) / 255
+            if let baseAddress = baseAddress?.assumingMemoryBound(to: UInt8.self) {
+                let pixelAddress = baseAddress + byteIndex
+                let red = CGFloat(pixelAddress[2]) / 255
+                let green = CGFloat(pixelAddress[1]) / 255
+                let blue = CGFloat(pixelAddress[0]) / 255
 
-            let pixelColor = UIColor(red: red, green: green, blue: blue, alpha: 1.0)
+                let pixelColor = UIColor(red: red, green: green, blue: blue, alpha: 1)
 
-            DispatchQueue.main.async {
                 self.topColorLabel.text = self.getNearestColor(pixelColor) ?? "Unknown"
                 self.topColorLabel.color = pixelColor
+            }
+        }
+
+        DispatchQueue.main.async {
+            let xk = self.bottomColorLabel.center.x / self.cameraPreview.bounds.width
+            let yk = self.bottomColorLabel.center.y / self.cameraPreview.bounds.height
+            let pixelX = Int(CGFloat(width) * xk)
+            let pixelY = Int(CGFloat(height) * yk)
+
+            let bytesPerPixel = 4
+            let byteIndex = (pixelX * bytesPerPixel) + (pixelY * bytesPerRow)
+
+            if let baseAddress = baseAddress?.assumingMemoryBound(to: UInt8.self) {
+                let pixelAddress = baseAddress + byteIndex
+                let red = CGFloat(pixelAddress[2]) / 255
+                let green = CGFloat(pixelAddress[1]) / 255
+                let blue = CGFloat(pixelAddress[0]) / 255
+
+                let pixelColor = UIColor(red: red, green: green, blue: blue, alpha: 1)
+
+                self.bottomColorLabel.text = self.getNearestColor(pixelColor) ?? "Unknown"
+                self.bottomColorLabel.color = pixelColor
             }
         }
 
