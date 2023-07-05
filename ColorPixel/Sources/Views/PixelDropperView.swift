@@ -7,12 +7,15 @@
 
 import UIKit
 
-final class ColorLabel: UIView {
+final class PixelDropperView: UIView {
 
     private(set) lazy var colorView: UIView = {
         let view = UIView()
-        view.layer.borderWidth = 2
+
+        view.layer.borderWidth = 1
         view.layer.borderColor = UIColor.white.cgColor
+        view.layer.cornerRadius = 8
+        view.clipsToBounds = true
         view.backgroundColor = .black
 
         return view
@@ -20,7 +23,9 @@ final class ColorLabel: UIView {
 
     private(set) lazy var textLabel: UILabel = {
         let label = UILabel()
+
         label.numberOfLines = 0
+        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textColor = .white
         label.text = "Unknown"
 
@@ -28,7 +33,7 @@ final class ColorLabel: UIView {
     }()
 
     private lazy var widthConstraint: NSLayoutConstraint = {
-        widthAnchor.constraint(equalToConstant: 180)
+        widthAnchor.constraint(equalToConstant: 190)
     }()
 
     var text: String? {
@@ -49,6 +54,11 @@ final class ColorLabel: UIView {
         }
     }
 
+    var poiner: CGPoint {
+        .init(x: frame.origin.x + 17 + 6,
+              y: frame.origin.y + 17 + 6)
+    }
+
     override init(frame: CGRect) {
         super.init(frame: frame)
 
@@ -67,15 +77,15 @@ final class ColorLabel: UIView {
         addSubview(colorView)
         addSubview(textLabel)
 
-        layoutMargins = .init(top: 12, left: 12, bottom: 12, right: 12)
+        layoutMargins = .init(top: 6, left: 6, bottom: 6, right: 6)
 
         translatesAutoresizingMaskIntoConstraints = false
         colorView.translatesAutoresizingMaskIntoConstraints = false
         textLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            colorView.widthAnchor.constraint(equalToConstant: 24),
-            colorView.heightAnchor.constraint(equalToConstant: 24),
+            colorView.widthAnchor.constraint(equalToConstant: 34),
+            colorView.heightAnchor.constraint(equalToConstant: 34),
             colorView.topAnchor.constraint(greaterThanOrEqualTo: layoutMarginsGuide.topAnchor),
             colorView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             colorView.centerYAnchor.constraint(equalTo: layoutMarginsGuide.centerYAnchor),

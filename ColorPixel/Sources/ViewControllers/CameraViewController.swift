@@ -11,11 +11,11 @@ import AVFoundation
 final class CameraViewController: UIViewController {
 
     private lazy var cameraPreview = CameraPreview()
-    private lazy var topColorLabel = ColorLabel()
-    private lazy var bottomColorLabel = ColorLabel()
+    private lazy var topColorLabel = PixelDropperView()
+    private lazy var bottomColorLabel = PixelDropperView()
 
     private lazy var topColorLabelCenterX: NSLayoutConstraint = {
-        topColorLabel.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
+        topColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
     }()
 
     private lazy var topColorLabelCenterY: NSLayoutConstraint = {
@@ -23,7 +23,7 @@ final class CameraViewController: UIViewController {
     }()
 
     private lazy var bottomColorLabelCenterX: NSLayoutConstraint = {
-        bottomColorLabel.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
+        bottomColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
     }()
 
     private lazy var bottomColorLabelCenterY: NSLayoutConstraint = {
@@ -71,6 +71,7 @@ final class CameraViewController: UIViewController {
         super.viewDidLoad()
 
         cameraPreview.session = captureSession
+        cameraPreview.videoPreviewLayer.videoGravity = .resizeAspectFill
 
         Task {
             await setupCaptureSession()
@@ -83,12 +84,21 @@ final class CameraViewController: UIViewController {
         serialQueue.async {
             self.captureSession.startRunning()
         }
+
+        NotificationCenter.default.addObserver(self,
+                                               selector: #selector(deviceOrientationDidChange),
+                                               name: UIDevice.orientationDidChangeNotification,
+                                               object: nil)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
         serialQueue.async {
             self.captureSession.stopRunning()
         }
+
+        NotificationCenter.default.removeObserver(self,
+                                                  name: UIDevice.orientationDidChangeNotification,
+                                                  object: nil)
 
         super.viewWillDisappear(animated)
     }
@@ -159,19 +169,19 @@ final class CameraViewController: UIViewController {
 extension CameraViewController {
 
     @objc func handlePanForTopColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let _ = gestureRecognizer.view as? ColorLabel else { return }
+        guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
-        topColorLabelCenterX.constant += translation.x
+//        topColorLabelCenterX.constant += translation.x
         topColorLabelCenterY.constant += translation.y
         gestureRecognizer.setTranslation(CGPoint.zero, in: cameraPreview)
     }
 
     @objc func handlePanForBottomColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let _ = gestureRecognizer.view as? ColorLabel else { return }
+        guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
-        bottomColorLabelCenterX.constant += translation.x
+//        bottomColorLabelCenterX.constant += translation.x
         bottomColorLabelCenterY.constant += translation.y
         gestureRecognizer.setTranslation(CGPoint.zero, in: cameraPreview)
     }
@@ -184,60 +194,64 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
                        from connection: AVCaptureConnection) {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
+        DispatchQueue.main.async {
+            let topPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.25)
+            self.topColorLabel.color = topPixelColor
+            self.topColorLabel.text = self.getNearestColor(topPixelColor) ?? "Unknown"
+
+            let bottomPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.75)
+            self.bottomColorLabel.color = bottomPixelColor
+            self.bottomColorLabel.text = self.getNearestColor(bottomPixelColor) ?? "Unknown"
+        }
+    }
+}
+
+// MARK: - Pixel Buffer handlers
+
+extension CameraViewController {
+
+    // x: 0...1, y: 0...1
+    func findColor(_ pixelBuffer: CVPixelBuffer, offsetX: CGFloat, offsetY: CGFloat) -> UIColor {
         CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
 
         let width = CVPixelBufferGetWidth(pixelBuffer)
         let height = CVPixelBufferGetHeight(pixelBuffer)
-        let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
-        let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer)
 
-        DispatchQueue.main.async {
-            let xk = self.topColorLabel.center.x / self.cameraPreview.bounds.width
-            let yk = self.topColorLabel.center.y / self.cameraPreview.bounds.height
-            let pixelX = Int(CGFloat(width) * xk)
-            let pixelY = Int(CGFloat(height) * yk)
+        let bytesPerRowY = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 0)
+        let bytesPerRowCbCr = CVPixelBufferGetBytesPerRowOfPlane(pixelBuffer, 1)
 
-            let bytesPerPixel = 4
-            let byteIndex = (pixelX * bytesPerPixel) + (pixelY * bytesPerRow)
+        let baseAddressY = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 0)!
+        let baseAddressCbCr = CVPixelBufferGetBaseAddressOfPlane(pixelBuffer, 1)!
 
-            if let baseAddress = baseAddress?.assumingMemoryBound(to: UInt8.self) {
-                let pixelAddress = baseAddress + byteIndex
-                let red = CGFloat(pixelAddress[2]) / 255
-                let green = CGFloat(pixelAddress[1]) / 255
-                let blue = CGFloat(pixelAddress[0]) / 255
+        let x = Int(CGFloat(width) * offsetX)
+        let y = Int(CGFloat(height) * offsetY)
 
-                let pixelColor = UIColor(red: red, green: green, blue: blue, alpha: 1)
+        let byteOffsetY = (y * bytesPerRowY) + x
+        let byteOffsetCbCr = ((y / 2) * bytesPerRowCbCr) + (x / 2) * 2
 
-                self.topColorLabel.text = self.getNearestColor(pixelColor) ?? "Unknown"
-                self.topColorLabel.color = pixelColor
-            }
-        }
+        let pixelPtrY = baseAddressY.assumingMemoryBound(to: UInt8.self)
+        let pixelPtrCbCr = baseAddressCbCr.assumingMemoryBound(to: UInt8.self)
 
-        DispatchQueue.main.async {
-            let xk = self.bottomColorLabel.center.x / self.cameraPreview.bounds.width
-            let yk = self.bottomColorLabel.center.y / self.cameraPreview.bounds.height
-            let pixelX = Int(CGFloat(width) * xk)
-            let pixelY = Int(CGFloat(height) * yk)
+        let yValue = CGFloat(pixelPtrY[byteOffsetY])
+        let cbValue = CGFloat(pixelPtrCbCr[byteOffsetCbCr])
+        let crValue = CGFloat(pixelPtrCbCr[byteOffsetCbCr + 1])
 
-            let bytesPerPixel = 4
-            let byteIndex = (pixelX * bytesPerPixel) + (pixelY * bytesPerRow)
+        // Convert YCbCr to RGB
+        let redValue = yValue + 1.402 * (crValue - 128)
+        let greenValue = yValue - 0.344136 * (cbValue - 128) - 0.714136 * (crValue - 128)
+        let blueValue = yValue + 1.772 * (cbValue - 128)
 
-            if let baseAddress = baseAddress?.assumingMemoryBound(to: UInt8.self) {
-                let pixelAddress = baseAddress + byteIndex
-                let red = CGFloat(pixelAddress[2]) / 255
-                let green = CGFloat(pixelAddress[1]) / 255
-                let blue = CGFloat(pixelAddress[0]) / 255
-
-                let pixelColor = UIColor(red: red, green: green, blue: blue, alpha: 1)
-
-                self.bottomColorLabel.text = self.getNearestColor(pixelColor) ?? "Unknown"
-                self.bottomColorLabel.color = pixelColor
-            }
-        }
+        let red = redValue / 255
+        let green = greenValue / 255
+        let blue = blueValue / 255
 
         CVPixelBufferUnlockBaseAddress(pixelBuffer, .readOnly)
+
+        return UIColor(red: red, green: green, blue: blue, alpha: 1)
     }
 }
+
+// MARK: - Color handlers
 
 extension CameraViewController {
 
@@ -264,5 +278,35 @@ extension CameraViewController {
         color2.getRed(&r2, green: &g2, blue: &b2, alpha: &a2)
 
         return sqrt(pow(r2 - r1, 2) + pow(g2 - g1, 2) + pow(b2 - b1, 2))
+    }
+}
+
+// MARK: - Device orientation
+
+fileprivate extension CameraViewController {
+
+    @objc func deviceOrientationDidChange() {
+        let deviceOrientation = UIDevice.current.orientation
+
+        switch deviceOrientation {
+        case .portrait:
+            updateVideoOrientation(.portrait)
+        case .landscapeLeft:
+            updateVideoOrientation(.landscapeRight)
+        case .landscapeRight:
+            updateVideoOrientation(.landscapeLeft)
+        default:
+            break
+        }
+    }
+
+    func updateVideoOrientation(_ orientation: AVCaptureVideoOrientation) {
+        guard let connection = cameraPreview.videoPreviewLayer.connection else {
+            return
+        }
+
+        if connection.isVideoOrientationSupported {
+            connection.videoOrientation = orientation
+        }
     }
 }
