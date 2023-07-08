@@ -103,10 +103,10 @@ final class CameraViewController: UIViewController {
             self.captureSession.startRunning()
         }
 
-        NotificationCenter.default.addObserver(self,
-                                               selector: #selector(deviceOrientationDidChange),
-                                               name: UIDevice.orientationDidChangeNotification,
-                                               object: nil)
+//        NotificationCenter.default.addObserver(self,
+//                                               selector: #selector(deviceOrientationDidChange),
+//                                               name: UIDevice.orientationDidChangeNotification,
+//                                               object: nil)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -192,6 +192,8 @@ final class CameraViewController: UIViewController {
 
         captureSession.addOutput(videoOutput)
         captureSession.commitConfiguration()
+
+        cameraPreview.videoPreviewLayer.connection?.videoOrientation = .landscapeRight
     }
 }
 
