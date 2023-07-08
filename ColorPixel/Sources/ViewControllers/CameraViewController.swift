@@ -14,6 +14,17 @@ final class CameraViewController: UIViewController {
     private lazy var topColorLabel = PixelDropperView()
     private lazy var bottomColorLabel = PixelDropperView()
 
+    private lazy var sizeSider: UISlider = {
+        let slider = UISlider()
+        slider.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
+        slider.minimumValue = 0
+        slider.maximumValue = 1
+        slider.value = sizeStore
+        slider.isHidden = !showingMenu
+
+        return slider
+    }()
+
     private lazy var topColorLabelCenterX: NSLayoutConstraint = {
         topColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
     }()
@@ -61,6 +72,13 @@ final class CameraViewController: UIViewController {
         }
     }
 
+    private var showingMenu = false
+
+    private var sizeStore: Float {
+        get { UserDefaults.standard.float(forKey: "dropper_size") }
+        set { UserDefaults.standard.setValue(newValue, forKey: "dropper_size") }
+    }
+
     override func loadView() {
         super.loadView()
 
@@ -104,19 +122,30 @@ final class CameraViewController: UIViewController {
     }
 
     private func setupView() {
+        changeDroppersSize(CGFloat(sizeStore))
+
+        let tap = UITapGestureRecognizer(target: self, action: #selector(showOrHideMenu))
+        view.addGestureRecognizer(tap)
+
         view.addSubview(cameraPreview)
+        view.addSubview(sizeSider)
         cameraPreview.addSubview(topColorLabel)
         cameraPreview.addSubview(bottomColorLabel)
 
         cameraPreview.translatesAutoresizingMaskIntoConstraints = false
         topColorLabel.translatesAutoresizingMaskIntoConstraints = false
         bottomColorLabel.translatesAutoresizingMaskIntoConstraints = false
+        sizeSider.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             cameraPreview.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             cameraPreview.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             cameraPreview.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             cameraPreview.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+
+            sizeSider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            sizeSider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            sizeSider.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 48),
 
             topColorLabelCenterX,
             topColorLabelCenterY,
@@ -184,6 +213,33 @@ extension CameraViewController {
 //        bottomColorLabelCenterX.constant += translation.x
         bottomColorLabelCenterY.constant += translation.y
         gestureRecognizer.setTranslation(CGPoint.zero, in: cameraPreview)
+    }
+}
+
+// MARK: - View actions
+
+private extension CameraViewController {
+
+    @objc func showOrHideMenu() {
+        showingMenu.toggle()
+        sizeSider.isHidden = !showingMenu
+    }
+}
+
+// MARK: - Slider action
+
+private extension CameraViewController {
+
+    @objc func changeSize(_ sender: UISlider) {
+        let changedValue = CGFloat(sender.value)
+
+        changeDroppersSize(changedValue)
+        sizeStore = sender.value
+    }
+
+    func changeDroppersSize(_ value: CGFloat) {
+        topColorLabel.size = value
+        bottomColorLabel.size = value
     }
 }
 

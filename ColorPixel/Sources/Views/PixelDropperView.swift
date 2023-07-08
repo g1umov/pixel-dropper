@@ -28,12 +28,17 @@ final class PixelDropperView: UIView {
         label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
         label.textColor = .white
         label.text = "Unknown"
+        label.lineBreakMode = .byWordWrapping
 
         return label
     }()
 
     private lazy var widthConstraint: NSLayoutConstraint = {
         widthAnchor.constraint(equalToConstant: 190)
+    }()
+
+    private lazy var colorViewWidth: NSLayoutConstraint = {
+        colorView.widthAnchor.constraint(equalToConstant: 34)
     }()
 
     var text: String? {
@@ -57,6 +62,30 @@ final class PixelDropperView: UIView {
     var poiner: CGPoint {
         .init(x: frame.origin.x + 17 + 6,
               y: frame.origin.y + 17 + 6)
+    }
+
+    var selfSize: CGFloat {
+        get {
+            widthConstraint.constant
+        }
+
+        set {
+            widthConstraint.constant = newValue
+        }
+    }
+
+    var size: CGFloat = 0 {
+        didSet {
+            colorViewWidth.constant = 34 + (50 * size)
+            colorView.layer.cornerRadius = 8 + (11.8 * size)
+
+            let margin = 6 + (8.8 * size)
+            layoutMargins = .init(top: margin, left: margin, bottom: margin, right: margin)
+            layer.cornerRadius = 8 + (4 * size)
+
+            widthConstraint.constant = 190 + (280 * size)
+            textLabel.font = UIFont.systemFont(ofSize: 16 + (24 * size), weight: .medium)
+        }
     }
 
     override init(frame: CGRect) {
@@ -84,8 +113,8 @@ final class PixelDropperView: UIView {
         textLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
-            colorView.widthAnchor.constraint(equalToConstant: 34),
-            colorView.heightAnchor.constraint(equalToConstant: 34),
+            colorViewWidth,
+            colorView.heightAnchor.constraint(equalTo: colorView.widthAnchor),
             colorView.topAnchor.constraint(greaterThanOrEqualTo: layoutMarginsGuide.topAnchor),
             colorView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             colorView.centerYAnchor.constraint(equalTo: layoutMarginsGuide.centerYAnchor),
