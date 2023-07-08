@@ -253,11 +253,11 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
         guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
 
         DispatchQueue.main.async {
-            let topPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.25)
+            let topPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.35)
             self.topColorLabel.color = topPixelColor
             self.topColorLabel.text = self.getNearestColor(topPixelColor) ?? "Unknown"
 
-            let bottomPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.75)
+            let bottomPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.65)
             self.bottomColorLabel.color = bottomPixelColor
             self.bottomColorLabel.text = self.getNearestColor(bottomPixelColor) ?? "Unknown"
         }
