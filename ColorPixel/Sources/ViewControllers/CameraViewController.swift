@@ -17,7 +17,7 @@ final class CameraViewController: UIViewController {
     private lazy var sizeSider: UISlider = {
         let slider = UISlider()
         slider.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
-        slider.minimumValue = 0
+        slider.minimumValue = -0.5
         slider.maximumValue = 1
         slider.value = sizeStore
         slider.isHidden = !showingMenu
