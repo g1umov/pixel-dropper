@@ -10,6 +10,8 @@ import AVFoundation
 
 final class CameraViewController: UIViewController {
 
+    // MARK: Subviews
+
     private lazy var cameraPreview = CameraPreview()
     private lazy var topColorLabel = PixelDropperView()
     private lazy var bottomColorLabel = PixelDropperView()
@@ -25,6 +27,8 @@ final class CameraViewController: UIViewController {
 
         return slider
     }()
+
+    // MARK: Constraints
 
     private lazy var topColorLabelCenterX: NSLayoutConstraint = {
         topColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
@@ -43,6 +47,8 @@ final class CameraViewController: UIViewController {
         bottomColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
                                                   constant: CGFloat(bottomDropperPositionY))
     }()
+
+    // MARK: Models
 
     private let captureSession = AVCaptureSession()
     private let serialQueue = DispatchQueue(label: "AVCaptureSession.global_queue.com")
@@ -77,6 +83,8 @@ final class CameraViewController: UIViewController {
 
     private var showingMenu = false
 
+    // MARK: - Properties Storage
+
     private var sizeStore: Float {
         get {
             UserDefaults.standard.float(forKey: "dropper_size")
@@ -103,6 +111,8 @@ final class CameraViewController: UIViewController {
             UserDefaults.standard.setValue(newValue, forKey: "bottom_dropper_position_y")
         }
     }
+
+    // MARK: View Life-Cycle
 
     override func loadView() {
         super.loadView()
@@ -137,6 +147,10 @@ final class CameraViewController: UIViewController {
 
         super.viewWillDisappear(animated)
     }
+
+    override var prefersHomeIndicatorAutoHidden: Bool {
+        return true
+    }
 }
 
 // MARK: - View setup
@@ -160,7 +174,7 @@ private extension CameraViewController {
             cameraPreview.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             cameraPreview.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             cameraPreview.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            cameraPreview.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            cameraPreview.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
             sizeSider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
             sizeSider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
@@ -301,6 +315,8 @@ private extension CameraViewController {
     }
 }
 
+// MARK: - AVCaptureVideoDataOutputSampleBufferDelegate
+
 extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 
     func captureOutput(_ output: AVCaptureOutput,
@@ -322,9 +338,8 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 
 // MARK: - Pixel Buffer handlers
 
-extension CameraViewController {
+private extension CameraViewController {
 
-    // x: 0...1, y: 0...1
     func findColor(_ pixelBuffer: CVPixelBuffer, offsetX: CGFloat, offsetY: CGFloat) -> UIColor {
         CVPixelBufferLockBaseAddress(pixelBuffer, .readOnly)
 
@@ -366,7 +381,7 @@ extension CameraViewController {
 
 // MARK: - Color handlers
 
-extension CameraViewController {
+private extension CameraViewController {
 
     func getNearestColor(_ inputValue: UIColor) -> String? {
         var minDistance: CGFloat = CGFloat.infinity
