@@ -16,6 +16,7 @@ final class CameraViewController: UIViewController {
 
     private lazy var sizeSider: UISlider = {
         let slider = UISlider()
+
         slider.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
         slider.minimumValue = -0.5
         slider.maximumValue = 1
@@ -30,7 +31,8 @@ final class CameraViewController: UIViewController {
     }()
 
     private lazy var topColorLabelCenterY: NSLayoutConstraint = {
-        topColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor, constant: -50)
+        topColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
+                                               constant: CGFloat(topDropperPositionY))
     }()
 
     private lazy var bottomColorLabelCenterX: NSLayoutConstraint = {
@@ -38,7 +40,8 @@ final class CameraViewController: UIViewController {
     }()
 
     private lazy var bottomColorLabelCenterY: NSLayoutConstraint = {
-        bottomColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor, constant: 50)
+        bottomColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
+                                                  constant: CGFloat(bottomDropperPositionY))
     }()
 
     private let captureSession = AVCaptureSession()
@@ -75,8 +78,30 @@ final class CameraViewController: UIViewController {
     private var showingMenu = false
 
     private var sizeStore: Float {
-        get { UserDefaults.standard.float(forKey: "dropper_size") }
-        set { UserDefaults.standard.setValue(newValue, forKey: "dropper_size") }
+        get {
+            UserDefaults.standard.float(forKey: "dropper_size")
+        }
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: "dropper_size")
+        }
+    }
+
+    private var topDropperPositionY: Float {
+        get {
+            UserDefaults.standard.value(forKey: "top_dropper_position_y") as? Float ?? -50
+        }
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: "top_dropper_position_y")
+        }
+    }
+
+    private var bottomDropperPositionY: Float {
+        get {
+            UserDefaults.standard.value(forKey: "bottom_dropper_position_y") as? Float ?? 50
+        }
+        set {
+            UserDefaults.standard.setValue(newValue, forKey: "bottom_dropper_position_y")
+        }
     }
 
     override func loadView() {
@@ -93,6 +118,7 @@ final class CameraViewController: UIViewController {
 
         Task {
             await setupCaptureSession()
+            cameraPreview.videoPreviewLayer.connection?.videoOrientation = .landscapeRight
         }
     }
 
@@ -102,11 +128,6 @@ final class CameraViewController: UIViewController {
         serialQueue.async {
             self.captureSession.startRunning()
         }
-
-//        NotificationCenter.default.addObserver(self,
-//                                               selector: #selector(deviceOrientationDidChange),
-//                                               name: UIDevice.orientationDidChangeNotification,
-//                                               object: nil)
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -114,18 +135,16 @@ final class CameraViewController: UIViewController {
             self.captureSession.stopRunning()
         }
 
-        NotificationCenter.default.removeObserver(self,
-                                                  name: UIDevice.orientationDidChangeNotification,
-                                                  object: nil)
-
         super.viewWillDisappear(animated)
     }
+}
 
-    private func setupView() {
+// MARK: - View setup
+
+private extension CameraViewController {
+
+    func setupView() {
         changeDroppersSize(CGFloat(sizeStore))
-
-        let tap = UITapGestureRecognizer(target: self, action: #selector(showOrHideMenu))
-        view.addGestureRecognizer(tap)
 
         view.addSubview(cameraPreview)
         view.addSubview(sizeSider)
@@ -154,19 +173,40 @@ final class CameraViewController: UIViewController {
             bottomColorLabelCenterY
         ])
 
+        let tap = UITapGestureRecognizer(target: self, action: #selector(showOrHideMenu))
+        view.addGestureRecognizer(tap)
+
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(zoomCamera(_:)))
+        view.addGestureRecognizer(pinch)
+
         let topColorLabelPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanForTopColorLabel(_:)))
         topColorLabel.addGestureRecognizer(topColorLabelPanGesture)
 
         let bottomColorLabelPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanForBottomColorLabel(_:)))
         bottomColorLabel.addGestureRecognizer(bottomColorLabelPanGesture)
     }
+}
 
-    private func setupCaptureSession() async {
+// MARK: - Capture session
+
+private extension CameraViewController {
+
+    func setupCaptureSession() async {
         guard await isAuthorized else { return }
 
         captureSession.beginConfiguration()
 
-        // Setup Input
+        setupDeviceInput()
+        setupDataOutput()
+
+        if captureSession.canSetSessionPreset(.hd4K3840x2160) {
+            captureSession.sessionPreset = .hd4K3840x2160
+        }
+
+        captureSession.commitConfiguration()
+    }
+
+    func setupDeviceInput() {
         guard
             let videoDevice = AVCaptureDevice.default(for: .video)
         else {
@@ -181,30 +221,25 @@ final class CameraViewController: UIViewController {
         }
 
         captureSession.addInput(videoDeviceInput)
+    }
 
-        // Setup Output
-        let photoOutput = AVCapturePhotoOutput()
-        guard captureSession.canAddOutput(photoOutput) else { return }
-        captureSession.sessionPreset = .photo
-
+    func setupDataOutput() {
         let videoOutput = AVCaptureVideoDataOutput()
         videoOutput.setSampleBufferDelegate(self, queue: .global(qos: .userInteractive))
-
         captureSession.addOutput(videoOutput)
-        captureSession.commitConfiguration()
-
-        cameraPreview.videoPreviewLayer.connection?.videoOrientation = .landscapeRight
     }
 }
 
-extension CameraViewController {
+// MARK: - Moving dropper views
+
+private extension CameraViewController {
 
     @objc func handlePanForTopColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
         guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
-//        topColorLabelCenterX.constant += translation.x
         topColorLabelCenterY.constant += translation.y
+        topDropperPositionY = Float(topColorLabelCenterY.constant)
         gestureRecognizer.setTranslation(CGPoint.zero, in: cameraPreview)
     }
 
@@ -212,8 +247,8 @@ extension CameraViewController {
         guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
-//        bottomColorLabelCenterX.constant += translation.x
         bottomColorLabelCenterY.constant += translation.y
+        bottomDropperPositionY = Float(bottomColorLabelCenterY.constant)
         gestureRecognizer.setTranslation(CGPoint.zero, in: cameraPreview)
     }
 }
@@ -225,6 +260,27 @@ private extension CameraViewController {
     @objc func showOrHideMenu() {
         showingMenu.toggle()
         sizeSider.isHidden = !showingMenu
+    }
+
+    @objc func zoomCamera(_ gesture: UIPinchGestureRecognizer) {
+        guard let device = AVCaptureDevice.default(for: .video) else {
+            return
+        }
+
+        do {
+            try device.lockForConfiguration()
+
+            let desiredZoomFactor = device.videoZoomFactor * gesture.scale
+            let minZoomFactor = device.minAvailableVideoZoomFactor
+            let maxZoomFactor = device.maxAvailableVideoZoomFactor
+
+            let clampedZoomFactor = max(min(desiredZoomFactor, maxZoomFactor), minZoomFactor)
+            device.ramp(toVideoZoomFactor: clampedZoomFactor, withRate: 1.0)
+
+            device.unlockForConfiguration()
+        } catch {
+            print("Error adjusting zoom factor: \(error)")
+        }
     }
 }
 
@@ -294,7 +350,6 @@ extension CameraViewController {
         let cbValue = CGFloat(pixelPtrCbCr[byteOffsetCbCr])
         let crValue = CGFloat(pixelPtrCbCr[byteOffsetCbCr + 1])
 
-        // Convert YCbCr to RGB
         let redValue = yValue + 1.402 * (crValue - 128)
         let greenValue = yValue - 0.344136 * (cbValue - 128) - 0.714136 * (crValue - 128)
         let blueValue = yValue + 1.772 * (cbValue - 128)
@@ -339,9 +394,9 @@ extension CameraViewController {
     }
 }
 
-// MARK: - Device orientation
+// MARK: - Device orientation triggers
 
-fileprivate extension CameraViewController {
+private extension CameraViewController {
 
     @objc func deviceOrientationDidChange() {
         let deviceOrientation = UIDevice.current.orientation
