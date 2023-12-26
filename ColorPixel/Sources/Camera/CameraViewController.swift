@@ -16,17 +16,14 @@ final class CameraViewController: UIViewController {
     private let topColorInfoView = ColorInfoView()
     private let bottomColorInfoView = ColorInfoView()
 
-    private lazy var sizeSlider: UISlider = {
-        let slider = UISlider()
+    private lazy var sizeSlider = UISlider().apply {
+        $0.minimumValue = -0.5
+        $0.maximumValue = 1
+        $0.value = sizeStore
+        $0.isHidden = !showingMenu
 
-        slider.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
-        slider.minimumValue = -0.5
-        slider.maximumValue = 1
-        slider.value = sizeStore
-        slider.isHidden = !showingMenu
-
-        return slider
-    }()
+        $0.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
+    }
 
     // MARK: Constraints
 

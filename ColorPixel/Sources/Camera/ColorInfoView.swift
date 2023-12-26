@@ -11,29 +11,21 @@ final class ColorInfoView: UIView {
 
     // MARK: Subviews
 
-    private let colorView: UIView = {
-        let view = UIView()
+    private let colorView = UIView().apply {
+        $0.layer.borderWidth = 1
+        $0.layer.borderColor = UIColor.white.cgColor
+        $0.layer.cornerRadius = 8
+        $0.clipsToBounds = true
+        $0.backgroundColor = .black
+    }
 
-        view.layer.borderWidth = 1
-        view.layer.borderColor = UIColor.white.cgColor
-        view.layer.cornerRadius = 8
-        view.clipsToBounds = true
-        view.backgroundColor = .black
-
-        return view
-    }()
-
-    private let colorNameLabel: UILabel = {
-        let label = UILabel()
-
-        label.numberOfLines = 0
-        label.font = UIFont.systemFont(ofSize: 16, weight: .medium)
-        label.textColor = .white
-        label.text = "Unknown"
-        label.lineBreakMode = .byWordWrapping
-
-        return label
-    }()
+    private let colorNameLabel = UILabel().apply {
+        $0.numberOfLines = 0
+        $0.font = UIFont.systemFont(ofSize: 16, weight: .medium)
+        $0.textColor = .white
+        $0.text = "Unknown"
+        $0.lineBreakMode = .byWordWrapping
+    }
 
     // MARK: Constraints
 
