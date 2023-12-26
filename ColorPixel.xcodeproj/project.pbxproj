@@ -86,9 +86,7 @@
 			children = (
 				862CC8102A48338500A7318D /* AppDelegate.swift */,
 				862CC8122A48338500A7318D /* SceneDelegate.swift */,
-				86509EE12A4F73E4008DB633 /* ViewControllers */,
-				86509EE22A4F73FD008DB633 /* Views */,
-				86509EDF2A4F73BD008DB633 /* Models */,
+				86B830512B3B249E006FD76F /* Camera */,
 				86509EDE2A4F739E008DB633 /* Extensions */,
 			);
 			path = Sources;
@@ -102,29 +100,15 @@
 			path = Extensions;
 			sourceTree = "<group>";
 		};
-		86509EDF2A4F73BD008DB633 /* Models */ = {
-			isa = PBXGroup;
-			children = (
-				8611D1472A4F69C8007BAF67 /* ColorModel.swift */,
-			);
-			path = Models;
-			sourceTree = "<group>";
-		};
-		86509EE12A4F73E4008DB633 /* ViewControllers */ = {
+		86B830512B3B249E006FD76F /* Camera */ = {
 			isa = PBXGroup;
 			children = (
 				862CC8142A48338500A7318D /* CameraViewController.swift */,
-			);
-			path = ViewControllers;
-			sourceTree = "<group>";
-		};
-		86509EE22A4F73FD008DB633 /* Views */ = {
-			isa = PBXGroup;
-			children = (
 				8642B8762A4F3E7D007481D6 /* ColorInfoView.swift */,
 				862CC8242A48398D00A7318D /* CameraPreview.swift */,
+				8611D1472A4F69C8007BAF67 /* ColorModel.swift */,
 			);
-			path = Views;
+			path = Camera;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
