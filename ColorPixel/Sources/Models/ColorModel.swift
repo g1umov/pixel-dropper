@@ -5,7 +5,7 @@
 //  Created by Vladislav on 30.06.23.
 //
 
-import UIKit
+import Foundation
 
 struct ColorModel: Decodable {
     let name: String

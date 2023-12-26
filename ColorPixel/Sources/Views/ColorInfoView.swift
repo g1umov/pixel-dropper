@@ -1,5 +1,5 @@
 //
-//  ColorLabel.swift
+//  ColorInfoView.swift
 //  ColorPixel
 //
 //  Created by Vladislav on 30.06.23.
@@ -7,9 +7,11 @@
 
 import UIKit
 
-final class PixelDropperView: UIView {
+final class ColorInfoView: UIView {
 
-    private(set) lazy var colorView: UIView = {
+    // MARK: Subviews
+
+    private let colorView: UIView = {
         let view = UIView()
 
         view.layer.borderWidth = 1
@@ -21,7 +23,7 @@ final class PixelDropperView: UIView {
         return view
     }()
 
-    private(set) lazy var textLabel: UILabel = {
+    private let colorNameLabel: UILabel = {
         let label = UILabel()
 
         label.numberOfLines = 0
@@ -33,6 +35,8 @@ final class PixelDropperView: UIView {
         return label
     }()
 
+    // MARK: Constraints
+
     private lazy var widthConstraint: NSLayoutConstraint = {
         widthAnchor.constraint(equalToConstant: 190)
     }()
@@ -41,12 +45,14 @@ final class PixelDropperView: UIView {
         colorView.widthAnchor.constraint(equalToConstant: 34)
     }()
 
+    // MARK: State
+
     var text: String? {
         get {
-            textLabel.text
+            colorNameLabel.text
         }
         set {
-            textLabel.text = newValue
+            colorNameLabel.text = newValue
         }
     }
 
@@ -56,21 +62,6 @@ final class PixelDropperView: UIView {
         }
         set {
             colorView.backgroundColor = newValue
-        }
-    }
-
-    var poiner: CGPoint {
-        .init(x: frame.origin.x + 17 + 6,
-              y: frame.origin.y + 17 + 6)
-    }
-
-    var selfSize: CGFloat {
-        get {
-            widthConstraint.constant
-        }
-
-        set {
-            widthConstraint.constant = newValue
         }
     }
 
@@ -84,9 +75,11 @@ final class PixelDropperView: UIView {
             layer.cornerRadius = 8 + (4 * size)
 
             widthConstraint.constant = 190 + (280 * size)
-            textLabel.font = UIFont.systemFont(ofSize: 16 + (24 * size), weight: .medium)
+            colorNameLabel.font = UIFont.systemFont(ofSize: 16 + (24 * size), weight: .medium)
         }
     }
+
+    // MARK: Initialization
 
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -94,23 +87,36 @@ final class PixelDropperView: UIView {
         setupView()
     }
     
+    @available(*, unavailable)
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
-    private func setupView() {
+}
+
+// MARK: - View Setup
+
+private extension ColorInfoView {
+
+    func setupView() {
+        setupViewAppearance()
+        setupViewLayout()
+    }
+
+    func setupViewAppearance() {
         backgroundColor = .black.withAlphaComponent(0.8)
         layer.cornerRadius = 8
         layer.masksToBounds = true
+    }
 
+    func setupViewLayout() {
         addSubview(colorView)
-        addSubview(textLabel)
+        addSubview(colorNameLabel)
 
         layoutMargins = .init(top: 6, left: 6, bottom: 6, right: 6)
 
         translatesAutoresizingMaskIntoConstraints = false
         colorView.translatesAutoresizingMaskIntoConstraints = false
-        textLabel.translatesAutoresizingMaskIntoConstraints = false
+        colorNameLabel.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             colorViewWidth,
@@ -119,10 +125,10 @@ final class PixelDropperView: UIView {
             colorView.leadingAnchor.constraint(equalTo: layoutMarginsGuide.leadingAnchor),
             colorView.centerYAnchor.constraint(equalTo: layoutMarginsGuide.centerYAnchor),
 
-            textLabel.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
-            textLabel.leadingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: 12),
-            textLabel.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
-            textLabel.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
+            colorNameLabel.topAnchor.constraint(equalTo: layoutMarginsGuide.topAnchor),
+            colorNameLabel.leadingAnchor.constraint(equalTo: colorView.trailingAnchor, constant: 12),
+            colorNameLabel.trailingAnchor.constraint(equalTo: layoutMarginsGuide.trailingAnchor),
+            colorNameLabel.bottomAnchor.constraint(equalTo: layoutMarginsGuide.bottomAnchor),
 
             widthConstraint
         ])

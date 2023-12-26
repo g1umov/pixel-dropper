@@ -12,11 +12,11 @@ final class CameraViewController: UIViewController {
 
     // MARK: Subviews
 
-    private lazy var cameraPreview = CameraPreview()
-    private lazy var topColorLabel = PixelDropperView()
-    private lazy var bottomColorLabel = PixelDropperView()
+    private let cameraPreview = CameraPreview()
+    private let topColorInfoView = ColorInfoView()
+    private let bottomColorInfoView = ColorInfoView()
 
-    private lazy var sizeSider: UISlider = {
+    private lazy var sizeSlider: UISlider = {
         let slider = UISlider()
 
         slider.addTarget(self, action: #selector(changeSize(_:)), for: .valueChanged)
@@ -31,20 +31,20 @@ final class CameraViewController: UIViewController {
     // MARK: Constraints
 
     private lazy var topColorLabelCenterX: NSLayoutConstraint = {
-        topColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
+        topColorInfoView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
     }()
 
     private lazy var topColorLabelCenterY: NSLayoutConstraint = {
-        topColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
+        topColorInfoView.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
                                                constant: CGFloat(topDropperPositionY))
     }()
 
     private lazy var bottomColorLabelCenterX: NSLayoutConstraint = {
-        bottomColorLabel.colorView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
+        bottomColorInfoView.centerXAnchor.constraint(equalTo: cameraPreview.centerXAnchor)
     }()
 
     private lazy var bottomColorLabelCenterY: NSLayoutConstraint = {
-        bottomColorLabel.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
+        bottomColorInfoView.centerYAnchor.constraint(equalTo: cameraPreview.centerYAnchor,
                                                   constant: CGFloat(bottomDropperPositionY))
     }()
 
@@ -83,7 +83,7 @@ final class CameraViewController: UIViewController {
 
     private var showingMenu = false
 
-    // MARK: - Properties Storage
+    // MARK: Properties Storage
 
     private var sizeStore: Float {
         get {
@@ -161,14 +161,14 @@ private extension CameraViewController {
         changeDroppersSize(CGFloat(sizeStore))
 
         view.addSubview(cameraPreview)
-        view.addSubview(sizeSider)
-        cameraPreview.addSubview(topColorLabel)
-        cameraPreview.addSubview(bottomColorLabel)
+        view.addSubview(sizeSlider)
+        cameraPreview.addSubview(topColorInfoView)
+        cameraPreview.addSubview(bottomColorInfoView)
 
         cameraPreview.translatesAutoresizingMaskIntoConstraints = false
-        topColorLabel.translatesAutoresizingMaskIntoConstraints = false
-        bottomColorLabel.translatesAutoresizingMaskIntoConstraints = false
-        sizeSider.translatesAutoresizingMaskIntoConstraints = false
+        topColorInfoView.translatesAutoresizingMaskIntoConstraints = false
+        bottomColorInfoView.translatesAutoresizingMaskIntoConstraints = false
+        sizeSlider.translatesAutoresizingMaskIntoConstraints = false
 
         NSLayoutConstraint.activate([
             cameraPreview.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
@@ -176,9 +176,9 @@ private extension CameraViewController {
             cameraPreview.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             cameraPreview.bottomAnchor.constraint(equalTo: view.bottomAnchor),
 
-            sizeSider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
-            sizeSider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            sizeSider.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 48),
+            sizeSlider.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -16),
+            sizeSlider.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            sizeSlider.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 48),
 
             topColorLabelCenterX,
             topColorLabelCenterY,
@@ -194,10 +194,10 @@ private extension CameraViewController {
         view.addGestureRecognizer(pinch)
 
         let topColorLabelPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanForTopColorLabel(_:)))
-        topColorLabel.addGestureRecognizer(topColorLabelPanGesture)
+        topColorInfoView.addGestureRecognizer(topColorLabelPanGesture)
 
         let bottomColorLabelPanGesture = UIPanGestureRecognizer(target: self, action: #selector(handlePanForBottomColorLabel(_:)))
-        bottomColorLabel.addGestureRecognizer(bottomColorLabelPanGesture)
+        bottomColorInfoView.addGestureRecognizer(bottomColorLabelPanGesture)
     }
 }
 
@@ -249,7 +249,7 @@ private extension CameraViewController {
 private extension CameraViewController {
 
     @objc func handlePanForTopColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
+        guard let _ = gestureRecognizer.view as? ColorInfoView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
         topColorLabelCenterY.constant += translation.y
@@ -258,7 +258,7 @@ private extension CameraViewController {
     }
 
     @objc func handlePanForBottomColorLabel(_ gestureRecognizer: UIPanGestureRecognizer) {
-        guard let _ = gestureRecognizer.view as? PixelDropperView else { return }
+        guard let _ = gestureRecognizer.view as? ColorInfoView else { return }
 
         let translation = gestureRecognizer.translation(in: cameraPreview)
         bottomColorLabelCenterY.constant += translation.y
@@ -273,7 +273,7 @@ private extension CameraViewController {
 
     @objc func showOrHideMenu() {
         showingMenu.toggle()
-        sizeSider.isHidden = !showingMenu
+        sizeSlider.isHidden = !showingMenu
     }
 
     @objc func zoomCamera(_ gesture: UIPinchGestureRecognizer) {
@@ -310,8 +310,8 @@ private extension CameraViewController {
     }
 
     func changeDroppersSize(_ value: CGFloat) {
-        topColorLabel.size = value
-        bottomColorLabel.size = value
+        topColorInfoView.size = value
+        bottomColorInfoView.size = value
     }
 }
 
@@ -326,12 +326,12 @@ extension CameraViewController: AVCaptureVideoDataOutputSampleBufferDelegate {
 
         DispatchQueue.main.async {
             let topPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.35)
-            self.topColorLabel.color = topPixelColor
-            self.topColorLabel.text = self.getNearestColor(topPixelColor) ?? "Unknown"
+            self.topColorInfoView.color = topPixelColor
+            self.topColorInfoView.text = self.getNearestColor(topPixelColor) ?? "Unknown"
 
             let bottomPixelColor = self.findColor(pixelBuffer, offsetX: 0.5, offsetY: 0.65)
-            self.bottomColorLabel.color = bottomPixelColor
-            self.bottomColorLabel.text = self.getNearestColor(bottomPixelColor) ?? "Unknown"
+            self.bottomColorInfoView.color = bottomPixelColor
+            self.bottomColorInfoView.text = self.getNearestColor(bottomPixelColor) ?? "Unknown"
         }
     }
 }

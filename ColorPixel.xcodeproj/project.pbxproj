@@ -15,7 +15,7 @@
 		862CC81A2A48338600A7318D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 862CC8192A48338600A7318D /* Assets.xcassets */; };
 		862CC81D2A48338600A7318D /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 862CC81B2A48338600A7318D /* LaunchScreen.storyboard */; };
 		862CC8252A48398D00A7318D /* CameraPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = 862CC8242A48398D00A7318D /* CameraPreview.swift */; };
-		8642B8772A4F3E7D007481D6 /* PixelDropperView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642B8762A4F3E7D007481D6 /* PixelDropperView.swift */; };
+		8642B8772A4F3E7D007481D6 /* ColorInfoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8642B8762A4F3E7D007481D6 /* ColorInfoView.swift */; };
 		86509EDB2A4F6CE9008DB633 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86509EDA2A4F6CE9008DB633 /* UIColor+Extension.swift */; };
 /* End PBXBuildFile section */
 
@@ -30,7 +30,7 @@
 		862CC81C2A48338600A7318D /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		862CC81E2A48338600A7318D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		862CC8242A48398D00A7318D /* CameraPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraPreview.swift; sourceTree = "<group>"; };
-		8642B8762A4F3E7D007481D6 /* PixelDropperView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PixelDropperView.swift; sourceTree = "<group>"; };
+		8642B8762A4F3E7D007481D6 /* ColorInfoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ColorInfoView.swift; sourceTree = "<group>"; };
 		86509EDA2A4F6CE9008DB633 /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -121,7 +121,7 @@
 		86509EE22A4F73FD008DB633 /* Views */ = {
 			isa = PBXGroup;
 			children = (
-				8642B8762A4F3E7D007481D6 /* PixelDropperView.swift */,
+				8642B8762A4F3E7D007481D6 /* ColorInfoView.swift */,
 				862CC8242A48398D00A7318D /* CameraPreview.swift */,
 			);
 			path = Views;
@@ -201,7 +201,7 @@
 				86509EDB2A4F6CE9008DB633 /* UIColor+Extension.swift in Sources */,
 				862CC8152A48338500A7318D /* CameraViewController.swift in Sources */,
 				862CC8252A48398D00A7318D /* CameraPreview.swift in Sources */,
-				8642B8772A4F3E7D007481D6 /* PixelDropperView.swift in Sources */,
+				8642B8772A4F3E7D007481D6 /* ColorInfoView.swift in Sources */,
 				862CC8112A48338500A7318D /* AppDelegate.swift in Sources */,
 				862CC8132A48338500A7318D /* SceneDelegate.swift in Sources */,
 				8611D1482A4F69C8007BAF67 /* ColorModel.swift in Sources */,
