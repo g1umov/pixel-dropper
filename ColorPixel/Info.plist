@@ -26,5 +26,7 @@
 		<key>UIColorName</key>
 		<string>BackgroundColor</string>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>This app uses the camera to capture photos and videos</string>
 </dict>
 </plist>

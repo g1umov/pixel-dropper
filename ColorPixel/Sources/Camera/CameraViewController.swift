@@ -65,17 +65,7 @@ final class CameraViewController: UIViewController {
     }()
 
     private var isAuthorized: Bool {
-        get async {
-            let status = AVCaptureDevice.authorizationStatus(for: .video)
-
-            var isAuthorized = status == .authorized
-
-            if status == .notDetermined {
-                isAuthorized = await AVCaptureDevice.requestAccess(for: .video)
-            }
-
-            return isAuthorized
-        }
+        AVCaptureDevice.authorizationStatus(for: .video) == .authorized
     }
 
     private var showingMenu = false
@@ -203,7 +193,7 @@ private extension CameraViewController {
 private extension CameraViewController {
 
     func setupCaptureSession() async {
-        guard await isAuthorized else { return }
+        guard isAuthorized else { return }
 
         captureSession.beginConfiguration()
 
